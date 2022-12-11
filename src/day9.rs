@@ -6,62 +6,73 @@ fn main() {
 
 fn day9() {
     let moves = fs::read_to_string("./input/day9.txt").expect("Could not read input");
-    let mut tail_locations: HashSet<(i64, i64)> = HashSet::from([(0, 0)]);
-    let (mut h_i, mut h_j) = (0, 0);
-    let (mut t_i, mut t_j) = (0, 0);
+    let mut tail_locations: HashSet<(i64, i64)> = HashSet::new();
+    let mut rope: Vec<(i64, i64)> = Vec::new();
+    const ROPE_LEN: usize = 10;
+    for _ in 0..ROPE_LEN {
+        rope.push((0, 0));
+    }
     for m in moves.split("\n") {
         let (dir, len) = m.split_at(1);
+        // start by moving the head
         for _ in 0..len.to_string().trim().parse::<i32>().unwrap() {
+            let mut new_head = rope[0];
             match dir {
-                "L" => h_i -= 1,
-                "R" => h_i += 1,
-                "U" => h_j += 1,
-                "D" => h_j -= 1,
+                "L" => new_head.0 -= 1,
+                "R" => new_head.0 += 1,
+                "U" => new_head.1 += 1,
+                "D" => new_head.1 -= 1,
                 _ => println!("Received weird input: {}", dir),
             }
-            if h_j - t_j == 2 {
-                // head is two up of tail
-                t_j += 1; // default, no diagonal
-                if h_i - t_i == 1 {
-                    // head is one right of tail
-                    t_i += 1;
-                } else if h_i - t_i == -1 {
-                    //head is one left of tail
-                    t_i -= 1;
+            rope[0] = new_head;
+            for i in 1..ROPE_LEN {
+                let lead = rope[(i as usize) - 1];
+                let mut follow = rope[(i as usize)];
+                if lead.1 - follow.1 == 2 {
+                    // head is two up of tail
+                    follow.1 += 1; // default, no diagonal
+                    if lead.0 - follow.0 > 0 {
+                        // head is  right of tail
+                        follow.0 += 1;
+                    } else if lead.0 - follow.0 < 0 {
+                        //head is left of tail
+                        follow.0 -= 1;
+                    }
                 }
-            }
-            if h_j - t_j == -2 {
-                // head is two down of tail
-                t_j -= 1;
-                if h_i - t_i == 1 {
-                    t_i += 1; // move diagonally (down and right)
-                } else if h_i - t_i == -1 {
-                    t_i -= 1;
+                if lead.1 - follow.1 == -2 {
+                    // head is two down of tail
+                    follow.1 -= 1;
+                    if lead.0 - follow.0 > 0 {
+                        follow.0 += 1; // move diagonally (down and right)
+                    } else if lead.0 - follow.0 < 0 {
+                        follow.0 -= 1;
+                    }
                 }
-            }
-            if h_i - t_i == 2 {
-                // head is two right of tail
-                t_i += 1; // move right
-                if h_j - t_j == 1 {
-                    // head is one up of tail
-                    t_j += 1; // move diagonally (up and right)
-                } else if h_j - t_j == -1 {
-                    //head is one down of tail
-                    t_j -= 1;
+                if lead.0 - follow.0 == 2 {
+                    // head is two right of tail
+                    follow.0 += 1; // move right
+                    if lead.1 - follow.1 > 0 {
+                        // head is one up of tail
+                        follow.1 += 1; // move diagonally (up and right)
+                    } else if lead.1 - follow.1 < 0 {
+                        //head is one down of tail
+                        follow.1 -= 1;
+                    }
                 }
-            }
-            if h_i - t_i == -2 {
-                // head is two left  of tail
-                t_i -= 1; // move left
-                if h_j - t_j == 1 {
-                    // head is one up of tail
-                    t_j += 1; // move diagonally (up and left)
-                } else if h_j - t_j == -1 {
-                    //head is one down of tail
-                    t_j -= 1;
+                if lead.0 - follow.0 == -2 {
+                    // head is two left  of tail
+                    follow.0 -= 1; // move left
+                    if lead.1 - follow.1 > 0 {
+                        // head is one up of tail
+                        follow.1 += 1; // move diagonally (up and left)
+                    } else if lead.1 - follow.1 < 0 {
+                        //head is one down of tail
+                        follow.1 -= 1;
+                    }
                 }
+                rope[(i as usize)] = follow;
             }
-            tail_locations.insert((t_i, t_j));
+            tail_locations.insert(rope[ROPE_LEN - 1]);
         }
     }
 
