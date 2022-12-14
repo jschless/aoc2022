@@ -34,11 +34,18 @@ for i, p in enumerate(pairs):
     if compare(p[0], p[1]) <= 0:
         sum += i + 1
 
-items = list(enumerate([item for pair in pairs for item in pair] + ([[[2]], [[6]]])))
-items = sorted(items, key=functools.cmp_to_key(lambda lh, rh: compare(lh[1], rh[1])))
+# part 2
+pairs.append([[[2]], [[6]]])
 
-print(sum)
-print(
-    next(idx for idx, (i, _) in enumerate(items, 1) if i == len(items) - 2)
-    * next(idx for idx, (i, _) in enumerate(items, 1) if i == len(items) - 1)
+flat_list = [item for sublist in pairs for item in sublist]
+items = sorted(
+    enumerate(flat_list), key=functools.cmp_to_key(lambda lh, rh: compare(lh[1], rh[1]))
 )
+
+acc = 1
+for n, tup in enumerate(items):
+    i, val = tup
+    if i == len(items) - 1 or i == len(items) - 2:
+        acc *= n + 1
+
+print(acc)
